@@ -1,0 +1,137 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+
+# Ignore git and VCS
+.git/
+.gitignore
+
+# Ignore node/npm cache and modules
+node_modules/
+npm-debug.log*
+
+# Ignore Docker artifacts
+*.log
+*.pid
+*.sock
+
+# Ignore test and temp files
+tests/
+*.test
+*.tmp
+*.swp
+*.bak
+*.orig
+
+# Ignore editor/project files
+.vscode/
+.idea/
+.DS_Store
+
+# Ignore other large/unneeded files
+*.tar
+*.tar.gz
+*.zip
+*.7z
+*.rar
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+debug.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Docker
+*.tar
+
+# Logs
+*.log
+
+# Git
+.git/
+.gitignore
+
+# System
+Thumbs.db
+Desktop.ini
+
+# Ignore secrets
+*.env
+.env.*
+
+# Ignore shared artifacts
+
+
+# Ignore Markdown and docs
+*.md
+docs/
+
+# Ignore task lists and project mgmt
+*.todo
+*.task
+*.tasks
+*.project
+*.idea/
+
+# Ignore node modules (for MCP server)
+node_modules/
+
+# Ignore test outputs
+*.out
+*.test
+
+# Ignore backup files
+*~
+*.bak
+*.swp
+*.swo

@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  mcp-client:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: mcp-client
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
+    volumes:
+      - ./mcp.json:/app/mcp.json
+    networks:
+      - mcp-network
+
+  brave-mcp:
+    image: node:18
+    container_name: brave-mcp
+    command: npx -y @modelcontextprotocol/server-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge

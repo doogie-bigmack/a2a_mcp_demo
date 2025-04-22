@@ -1,0 +1,24 @@
+{
+  "name": "A2A Security Server Agent",
+  "url": "http://localhost:8080",
+  "version": "1.0.0",
+  "description": "Performs Dockerfile security analysis and hardening via A2A.",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "skills": [
+    {
+      "id": "dockerfile_hardening",
+      "name": "Dockerfile Hardening",
+      "description": "Analyzes and hardens Dockerfiles using static and dynamic checks."
+    }
+  ],
+  "authentication": {
+    "schemes": ["Bearer"],
+    "credentials": null
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"]
+}

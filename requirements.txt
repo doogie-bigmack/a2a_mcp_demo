@@ -1,0 +1,24 @@
+openai==1.75.0
+pydantic-ai==0.1.3
+logfire>=3.14.0
+opentelemetry-instrumentation-asgi
+opentelemetry-instrumentation-fastapi
+opentelemetry-api
+opentelemetry-sdk
+mcp-agent==0.0.16
+mcp==1.6.0
+# browser-use-mcp-server==1.0.2
+# NOTE: Not available on PyPI. The Brave MCP server is run separately via Node.js.
+# brave_mcp_client is a local module
+fastmcp>=0.1.0  # MCP client library
+playwright==1.44.0
+fastapi
+uvicorn
+python-dotenv
+requests
+pydantic
+jsonrpcserver
+# Hadolint and Trivy installed via Dockerfile
+# A2A SDK from GitHub
+# -e git+https://github.com/google/A2A.git@main#egg=A2A&subdirectory=python
+# NOTE: A2A install from GitHub commented out due to missing setup.py/pyproject.toml. Revisit when upstream is fixed or package is on PyPI.

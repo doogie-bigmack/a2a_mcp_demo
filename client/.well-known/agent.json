@@ -1,0 +1,24 @@
+{
+  "name": "A2A Security Client Agent",
+  "url": "http://localhost:8081",
+  "version": "1.0.0",
+  "description": "Submits Dockerfiles to server agent for security analysis via A2A.",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "skills": [
+    {
+      "id": "dockerfile_submit",
+      "name": "Dockerfile Submission",
+      "description": "Submits Dockerfiles for security analysis and hardening."
+    }
+  ],
+  "authentication": {
+    "schemes": ["Bearer"],
+    "credentials": null
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"]
+}

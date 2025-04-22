@@ -1,0 +1,36 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
+    # depends_on:
+    #   - server
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    volumes:
+      - ./shared:/app/shared
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+
+  brave-mcp:
+    image: node:18
+    container_name: brave-mcp
+    command: npx -y @modelcontextprotocol/server-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    networks:
+      - default

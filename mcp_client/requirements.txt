@@ -1,0 +1,8 @@
+Flask>=2.2.0
+Flogfire>=3.14.0
+opentelemetry-instrumentation-asgi
+opentelemetry-instrumentation-fastapi
+opentelemetry-api
+opentelemetry-sdk
+python-dotenv>=1.0.0
+pydantic_ai==0.1.3
