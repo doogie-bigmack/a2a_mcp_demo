@@ -3,6 +3,21 @@
 # Usage: bash test_jsonrpc_tasks.sh
 
 set -e
+
+# Print .env file contents if accessible
+if [ -f .env ]; then
+  echo "\n===== .env file contents ====="
+  cat .env
+  echo "===== End .env file contents =====\n"
+else
+  echo ".env file not found or not readable."
+fi
+
+# Print all environment variables relevant to the test
+echo "\n===== Environment Variables ====="
+env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
+echo "===== End Environment Variables =====\n"
+
 API_URL="http://localhost:8080/"
 TOKEN="ay5cJzvq0ERBJ3K3b_rGTaeZuykbWqGcvU23KMzDRRk"  # Synced with .env A2A_BEARER_TOKEN
 
