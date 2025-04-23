@@ -38,6 +38,15 @@ def green_log(msg):
         print(f"{GREEN}{msg}{RESET}")
 
 class A2AClient:
+    """
+    Client for communicating with an A2A-compliant agent server using JSON-RPC over HTTP.
+    Handles agent card validation, sending Dockerfile content, and error reporting with logfire.
+
+    Attributes:
+        server_url (str): The URL of the agent server.
+        bearer_token (str): Bearer token for authentication.
+        agent_card (dict): Validated agent card metadata from the server.
+    """
     def __init__(self, server_url: str):
         self.server_url = server_url
         self.bearer_token = os.getenv("A2A_BEARER_TOKEN", "test-token")
