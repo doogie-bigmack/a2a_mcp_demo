@@ -85,6 +85,11 @@ class LogAllHeadersMiddleware:
             await error_sender({"type": "http.response.body"})
 
 app = FastAPI()
+
+@app.get("/healthz")
+async def health_check():
+    return {"status": "ok"}
+
 # Middleware to enforce Accept header for agent card endpoint
 @app.middleware("http")
 async def enforce_agent_card_accept_header(request: Request, call_next):
