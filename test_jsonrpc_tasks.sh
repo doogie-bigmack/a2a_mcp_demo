@@ -19,9 +19,9 @@ SEND_RESP=$(curl -s -X POST "$API_URL" \
   }')
 echo "Raw SEND_RESP: $SEND_RESP"
 if command -v jq >/dev/null 2>&1; then
-  TASK_ID=$(echo "$SEND_RESP" | jq -r '.result.task.id // empty')
+  TASK_ID=$(echo "$SEND_RESP" | jq -r '.result.result.task.id // empty')
 else
-  TASK_ID=$(echo "$SEND_RESP" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('result', {}).get('task', {}).get('id', ''))")
+  TASK_ID=$(echo "$SEND_RESP" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('result', {}).get('result', {}).get('task', {}).get('id', ''))")
 fi
 if [ -z "$TASK_ID" ]; then
   echo "ERROR: Could not extract task ID from SEND_RESP. Full response: $SEND_RESP" >&2
