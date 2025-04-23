@@ -2,6 +2,13 @@ import inspect
 import json
 
 def get_jsonrpc_method_map():
+    """
+    Return a mapping of supported JSON-RPC method names to their corresponding functions.
+    Methods are imported locally to avoid circular imports.
+
+    Returns:
+        dict: Mapping of method names to callables.
+    """
     # Import locally to avoid circular import
     from agent import tasks_send, tasks_get, tasks_cancel, tasks_pushNotification_set, tasks_pushNotification_get
     return {
@@ -13,6 +20,17 @@ def get_jsonrpc_method_map():
     }
 
 async def jsonrpc_async_dispatch(raw_body: bytes):
+    """
+    Dispatch a JSON-RPC request asynchronously to the appropriate agent method.
+
+    Args:
+        raw_body (bytes): The raw HTTP request body containing JSON-RPC data.
+
+    Returns:
+        dict: A JSON-RPC 2.0 response object, either with 'result' or 'error'.
+
+    Handles both async and sync agent methods and provides robust error handling for FastAPI/A2A integration.
+    """
     try:
         req = json.loads(raw_body.decode("utf-8"))
         method = req.get("method")
