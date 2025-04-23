@@ -1,4 +1,18 @@
 #!/bin/bash
+
+set -e
+# Print .env file contents if accessible
+if [ -f .env ]; then
+  echo "\n===== .env file contents ====="
+  cat .env
+  echo "===== End .env file contents =====\n"
+else
+  echo ".env file not found or not readable."
+fi
+# Print all environment variables relevant to the test
+echo "\n===== Environment Variables ====="
+env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
+echo "===== End Environment Variables =====\n"
 set -euo pipefail
 
 BASE_URL="http://localhost:8080"
