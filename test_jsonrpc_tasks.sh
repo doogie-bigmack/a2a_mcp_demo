@@ -80,14 +80,6 @@ CANCEL_AGAIN_RESP=$(curl -v -s -X POST "$API_URL" \
   }')
 echo "Raw CANCEL_AGAIN_RESP: $CANCEL_AGAIN_RESP"
 
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 4,
-    "method": "tasks_cancel",
-    "params": {"id": "'$TASK_ID'"}
-  }')
-echo "$CANCEL_AGAIN_RESP"
-
 # 5. Get status for unknown task (should get -32001 error)
 echo "\n--- Getting status for unknown task (should fail with -32001) ---"
 GET_UNKNOWN_RESP=$(curl -s -X POST "$API_URL" \
