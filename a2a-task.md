@@ -1,5 +1,8 @@
 # A2A Compliance Task List
 
+## TODO
+- [ ] When updating Markdown checklists for A2A compliance, always use green check marks (✅) to indicate completed items, not just [x]. This applies to task lists in a2a-task.md and similar files.
+
 > This task board tracks everything we need to implement (or refactor) so that the **client** and **server** in this repo fully conform to the A2A‑PRD specification (`A2A-prd.md`). Tick items off as they are completed. Feel free to break down further or re‑prioritise.
 
 ---

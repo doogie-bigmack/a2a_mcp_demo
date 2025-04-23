@@ -1,12 +1,15 @@
 import os
-import pytest
 import json
 
-SERVER_AGENT_CARD_PATH = os.path.join(".well-known", "agent.json")
-REQUIRED_FIELDS = ["name", "url", "version", "skills", "capabilities", "authentication"]
+CLIENT_AGENT_CARD_PATH = os.path.join(
+    ".well-known", "agent.json"
+)
+REQUIRED_FIELDS = [
+    "name", "url", "version", "skills", "capabilities", "authentication"
+]
 
 def test_agent_card_fields():
-    with open(SERVER_AGENT_CARD_PATH, "r") as f:
+    with open(CLIENT_AGENT_CARD_PATH, "r") as f:
         card = json.load(f)
     missing = [f for f in REQUIRED_FIELDS if f not in card]
     assert not missing, f"Agent card missing required fields: {missing}"

@@ -1,8 +1,6 @@
-print('SERVER AGENT LATEST')
 import os
 import logfire
 import json
-import subprocess
 import traceback
 import uuid
 from typing import Any
@@ -10,7 +8,10 @@ from fastapi import FastAPI, Request, Depends, status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
-from shared.models import DockerConfig, DockerFixResult, TaskStore, TaskHistory, SendTaskRequest, SendTaskResponse, Task, PushNotificationEndpoint, Artifact, Part
+from shared.models import (
+    DockerConfig, DockerFixResult, TaskStore, TaskHistory, SendTaskRequest,
+    SendTaskResponse, Task, PushNotificationEndpoint, Artifact, Part
+)
 from send_subscribe_sse import router as sse_router
 from jsonrpc_dispatch import jsonrpc_async_dispatch
 from brave_mcp_client import web_search
@@ -31,7 +32,7 @@ async def tasks_pushNotification_get(id: str):
         logfire.error("push_notification_get_unknown_id", task_id=id)
         return {"error": {"code": -32001, "message": "No push endpoint for task id"}}
     logfire.info("push_notification_get", task_id=id, endpoint=endpoint.endpoint)
-    return {"endpoint": endpoint.endpoint, "token": endpoint.token}
+    return {"result": {"endpoint": endpoint.endpoint, "token": endpoint.token}}
 
 
 load_dotenv()
@@ -51,28 +52,54 @@ RESET = "\033[0m"
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 class LogAllHeadersMiddleware:
+    """
+    ASGI middleware that logs all HTTP request headers using logfire.
+
+    This middleware logs the path and headers of each HTTP request for observability and debugging.
+    It uses logfire for structured JSON logging.
+    """
     def __init__(self, app: ASGIApp):
         self.app = app
     async def __call__(self, scope: Scope, receive: Receive, send: Send):
         if scope["type"] == "http":
             import logfire
+            # Log the request path
             logfire.info("asgi_middleware_test", path=scope.get("path"))
+            # Log all raw headers
             headers = {k.decode(): v.decode() for k, v in scope.get("headers", [])}
             logfire.info("asgi_raw_headers", path=scope.get("path"), headers=headers)
-        await self.app(scope, receive, send)
+        try:
+            await self.app(scope, receive, send)
+        except Exception as e:
+            import logfire
+            logfire.error("logallheaders_middleware_exception", error=str(e), path=scope.get("path"))
+            from starlette.responses import JSONResponse
+            from starlette.types import Message
+            import asyncio
+            async def error_sender(message: Message):
+                if message["type"] == "http.response.start":
+                    await send({"type": "http.response.start", "status": 500, "headers": [(b"content-type", b"application/json")]})
+                elif message["type"] == "http.response.body":
+                    await send({"type": "http.response.body", "body": b'{"error": "Internal Server Error"}', "more_body": False})
+            await error_sender({"type": "http.response.start"})
+            await error_sender({"type": "http.response.body"})
 
 app = FastAPI()
-try:
-    app.add_middleware(LogAllHeadersMiddleware)
-except Exception as e:
-    print('FAILED TO REGISTER MIDDLEWARE:', e)
-
-# Print for bulletproof debugging
-print('ASGI middleware registered')
-
 # Middleware to enforce Accept header for agent card endpoint
 @app.middleware("http")
 async def enforce_agent_card_accept_header(request: Request, call_next):
+    """
+    Middleware to enforce correct Accept header for the agent card endpoint.
+    Logs incoming headers and ensures that requests to /.well-known/agent.json
+    have an appropriate Accept header. Uses logfire for logging.
+
+    Args:
+        request (Request): The incoming HTTP request.
+        call_next: The next middleware or endpoint handler.
+
+    Returns:
+        JSONResponse with 406 status if Accept header is invalid, otherwise the normal response.
+    """
     logfire.info("middleware_accept_debug", path=str(request.url.path), headers=dict(request.headers))
     if request.url.path == "/.well-known/agent.json": 
         accept = request.headers.get("accept", "application/json").lower()
@@ -85,13 +112,30 @@ async def enforce_agent_card_accept_header(request: Request, call_next):
         if not allowed:
             logfire.error("agent_card_invalid_accept", accept=accept)
             return JSONResponse(content={"error": "Not Acceptable"}, status_code=406)
-    return await call_next(request)
+    try:
+        response = await call_next(request)
+        if response is None:
+            logfire.error("middleware_no_response", path=str(request.url.path))
+            return JSONResponse(content={"error": "Internal Server Error: No response returned by downstream handler."}, status_code=500)
+        return response
+    except Exception as e:
+        logfire.error("middleware_exception", error=str(e), path=str(request.url.path))
+        return JSONResponse(content={"error": f"Internal Server Error: {str(e)}"}, status_code=500)
+
+try:
+    app.add_middleware(LogAllHeadersMiddleware)
+except Exception as e:
+    logfire.error('FAILED TO REGISTER MIDDLEWARE', error=str(e))
+
+logfire.info("asgi_middleware_registered")
 
 # Instrument FastAPI app with logfire for observability and JSON logging
 logfire.instrument_fastapi(app)
 
 from send_subscribe_sse import router as sse_router
+# Include the SSE router for server-sent events
 app.include_router(sse_router)
+# Import the shared task store for managing tasks
 from task_store import task_store
 
 
@@ -100,6 +144,15 @@ from fastapi.responses import StreamingResponse
 import asyncio
 
 async def event_generator(task_id: str):
+    """
+    Simulate server-sent event (SSE) streaming for a given task.
+
+    Args:
+        task_id (str): The ID of the task to stream events for.
+
+    Yields:
+        str: Event data as a string for SSE.
+    """
     # Simulate streaming status updates for demo
     states = ["submitted", "working", "completed"]
     for state in states:
@@ -173,7 +226,7 @@ async def tasks_send(raw_text: str):
         try:
             logfire.info("starting search for best practices")
             brave_search_result_text = await web_search("Dockerfile security best practices")
-            best_practices = [brave_search_result_text]
+            best_practices = [str(brave_search_result_text)]
             logfire.info("brave_web_search_agent_used", result=brave_search_result_text)
         except RuntimeError as e:
             best_practices = [f"MCP Error: {str(e)}"]
@@ -201,10 +254,9 @@ async def tasks_send(raw_text: str):
         task_store.history[task_id] = TaskHistory(transitions=[{"state": "submitted"}])
         trace_id = str(uuid.uuid4())
         logfire.info("task_stored", trace_id=trace_id, task_id=task_id)
-        return {"result": patched}
+        return {"result": {"task": task.dict(), "patched": patched}}
     except Exception as e:
         logfire.error("server_exception", error=str(e), traceback=traceback.format_exc())
-        # [blue_log] replaced by logfire.info or logfire.error"event": "server_exception", "error": str(e)})
         return {"error": str(e)}
 
 def tasks_get(id: str, historyLength: int = 0):
@@ -250,9 +302,13 @@ from jsonrpc_dispatch import jsonrpc_async_dispatch
 
 @app.post("/")
 async def jsonrpc_entrypoint(request: Request, _auth: None = Depends(verify_bearer_auth)):
-    req_data = await request.body()
-    response = await jsonrpc_async_dispatch(req_data)
-    return JSONResponse(content=response, status_code=200)
+    try:
+        req_data = await request.body()
+        response = await jsonrpc_async_dispatch(req_data)
+        return JSONResponse(content=response, status_code=200)
+    except Exception as e:
+        logfire.error("jsonrpc_entrypoint_exception", error=str(e))
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @app.post("/a2a/tasks/send")
 async def analyze_and_fix_docker(request: Request, _auth: None = Depends(verify_bearer_auth)):
@@ -264,7 +320,7 @@ async def analyze_and_fix_docker(request: Request, _auth: None = Depends(verify_
         try:
             logfire.info("starting search for best practices")
             brave_search_result_text = await web_search("Dockerfile security best practices")
-            best_practices = [brave_search_result_text]
+            best_practices = [str(brave_search_result_text)]
             logfire.info("brave_web_search_agent_used", result=brave_search_result_text)
         except RuntimeError as e:
             best_practices = [f"MCP Error: {str(e)}"]

@@ -8,6 +8,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
+      - A2A_BEARER_TOKEN=${A2A_BEARER_TOKEN}
     # depends_on:
     #   - server
   server:
@@ -21,6 +22,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
+      - A2A_BEARER_TOKEN=${A2A_BEARER_TOKEN}
     ports:
       - "8080:8080"
     networks:

@@ -1,0 +1,54 @@
+# GitHub Actions workflow for CI: runs all test scripts and lints, but linter failures do not fail the build
+name: CI
+
+on:
+  push:
+    branches: [ main, "feature/*" ]
+  pull_request:
+    branches: [ main, "feature/*" ]
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_ENV: test
+      # Add other environment variables as needed
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck jq
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Python linter (flake8)
+        run: |
+          pip install flake8
+          flake8 . || true  # Do not fail if linter finds issues
+
+      - name: Run Python tests (pytest)
+        run: |
+          for f in server/test_agent_card.py client/test_agent_card.py test_agent_card.py; do
+            if [ -f "$f" ]; then pytest "$f" --tb=short --maxfail=1 || exit 1; fi
+          done
+
+      - name: Run shell test scripts
+        run: |
+          for f in test_jsonrpc_tasks.sh test_jsonrpc_push_notification.sh test_negative_robustness.sh test_streaming_and_resubscribe.sh; do
+            if [ -f "$f" ]; then bash "$f" || exit 1; fi
+          done
+
+      - name: Show test summary
+        run: |
+          if [ -f run_all_tests.sh ]; then bash run_all_tests.sh; fi

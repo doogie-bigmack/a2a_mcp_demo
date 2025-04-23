@@ -188,6 +188,9 @@ a2a-docker-demo/
    ```
    (Replace with your file path as needed)
 
+## TODO
+- [ ] When updating Markdown checklists for A2A compliance, always use green check marks (✅) to indicate completed items, not just [x]. This applies to task lists in a2a-task.md and similar files.
+
 ## Environment Variables
 - `BRAVE_API_KEY` (required for Brave MCP server; set in `.env`)
 - `PYTHONUNBUFFERED=1` (default for logs)

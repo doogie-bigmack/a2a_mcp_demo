@@ -31,13 +31,22 @@ GREEN = "\033[92m"
 RESET = "\033[0m"
 
 def green_log(msg):
-    if isinstance(msg, dict):
-        import json
-        print(f"{GREEN}{json.dumps(msg)}{RESET}")
-    else:
-        print(f"{GREEN}{msg}{RESET}")
+    """
+    Log a message in green color (for debugging only).
+    Deprecated: Use logfire for all logging.
+    """
+    logfire.info("green_log", msg=msg)
 
 class A2AClient:
+    """
+    Client for communicating with an A2A-compliant agent server using JSON-RPC over HTTP.
+    Handles agent card validation, sending Dockerfile content, and error reporting with logfire.
+
+    Attributes:
+        server_url (str): The URL of the agent server.
+        bearer_token (str): Bearer token for authentication.
+        agent_card (dict): Validated agent card metadata from the server.
+    """
     def __init__(self, server_url: str):
         self.server_url = server_url
         self.bearer_token = os.getenv("A2A_BEARER_TOKEN", "test-token")
@@ -50,18 +59,25 @@ class A2AClient:
             resp = requests.get(url, timeout=5)
             resp.raise_for_status()
             card = resp.json()
-            required_fields = ["name", "url", "version", "skills", "capabilities", "authentication"]
+            required_fields = [
+                "name", "url", "version", "skills", "capabilities", "authentication"
+            ]
             missing = [f for f in required_fields if f not in card]
             if missing:
                 logfire.error("agent_card_missing_fields", missing=missing, card=card)
-                raise ValueError(f"Server agent card missing required fields: {missing}")
-            # Optionally, validate types/values here
+                raise ValueError(
+                    f"Server agent card missing required fields: {missing}"
+                )
             logfire.info("agent_card_validated", card=card)
-            green_log({"event": "agent_card_validated", "card": card})
+            logfire.info("green_log", event="agent_card_validated", card=card)
             return card
         except Exception as e:
-            logfire.error("agent_card_validation_failed", error=str(e), url=url)
-            green_log({"event": "agent_card_validation_failed", "error": str(e), "url": url})
+            logfire.error(
+                "agent_card_validation_failed", error=str(e), url=url
+            )
+            logfire.info(
+                "green_log", event="agent_card_validation_failed", error=str(e), url=url
+            )
             raise
 
     def send_dockerfile(self, dockerfile_text: str):
@@ -73,7 +89,7 @@ class A2AClient:
             "id": 1
         }
         logfire.info("send_dockerfile", payload=rpc_payload)
-        green_log({"event": "send_dockerfile", "payload": rpc_payload})
+        logfire.info("green_log", event="send_dockerfile", payload=rpc_payload)
         headers = {"Authorization": f"Bearer {self.bearer_token}"}
         try:
             resp = requests.post(f"{self.server_url}/", json=rpc_payload, headers=headers)
@@ -81,10 +97,14 @@ class A2AClient:
             result = resp.json()
             if "error" in result:
                 logfire.error("client_jsonrpc_error", error=result["error"])
-                green_log({"event": "client_jsonrpc_error", "error": result["error"]})
+                logfire.info(
+                    "green_log", event="client_jsonrpc_error", error=result["error"]
+                )
                 return {"error": result["error"]}
             logfire.info("received_response", response=result.get("result"))
-            green_log({"event": "received_response", "response": result.get("result")})
+            logfire.info(
+                "green_log", event="received_response", response=result.get("result")
+            )
             return result.get("result")
         except requests.exceptions.HTTPError as e:
             try:
