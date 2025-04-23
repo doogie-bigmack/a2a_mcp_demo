@@ -8,7 +8,14 @@ if [ -f .env ]; then
   echo "\n===== .env file contents (including secrets) ====="
   cat .env
   echo "===== End .env file contents =====\n"
-  set -o allexport
+  set -euo pipefail
+
+echo "PYTHONPATH: $PYTHONPATH"
+pwd
+ls -l
+docker compose ps
+docker compose logs server
+set -o allexport
   source .env
   set +o allexport
 else

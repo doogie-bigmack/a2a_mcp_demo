@@ -62,6 +62,26 @@ jobs:
       - name: Run shell integration tests
         run: |
           export PYTHONPATH=$(pwd)
+          echo "PYTHONPATH=$PYTHONPATH"
+          pwd
+          ls -l
+          docker compose ps
+          docker compose logs server
+          set -e
+          for f in test_jsonrpc_tasks.sh test_jsonrpc_push_notification.sh test_negative_robustness.sh test_streaming_and_resubscribe.sh; do
+            if [ -f "$f" ]; then bash "$f" || exit 1; fi
+          done
+
+      - name: Print server logs and diagnostics if tests fail
+        if: always()
+        run: |
+          echo "==== SERVER LOGS ===="
+          docker compose logs server || true
+          echo "==== DOCKER PS ===="
+          docker compose ps || true
+          echo "==== WORKSPACE TREE ===="
+          ls -lR || true
+          export PYTHONPATH=$(pwd)
           set -e
           for f in test_jsonrpc_tasks.sh test_jsonrpc_push_notification.sh test_negative_robustness.sh test_streaming_and_resubscribe.sh; do
             if [ -f "$f" ]; then bash "$f" || exit 1; fi

@@ -13,8 +13,11 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # Now copy only your app code (these change most frequently)
 COPY shared ./shared
-COPY server/agent.py server/main.py server/brave_mcp_client.py server/send_subscribe_sse.py server/jsonrpc_dispatch.py server/task_store.py ./
-RUN pwd && ls -l /app && cat /app/agent.py | head -20
+COPY server ./server
+RUN pwd && ls -l /app && ls -l /app/server && head -20 /app/server/agent.py
 
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONFAULTHANDLER=1
 EXPOSE 8080
-CMD ["python", "main.py"]
+CMD ["uvicorn", "server.agent:app", "--host", "0.0.0.0", "--port", "8080"]

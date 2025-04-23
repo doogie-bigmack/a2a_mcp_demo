@@ -24,6 +24,12 @@ fi
 
 set -euo pipefail
 
+echo "PYTHONPATH: $PYTHONPATH"
+pwd
+ls -l
+docker compose ps
+docker compose logs server
+
 API_URL="http://localhost:8080"
 # Ensure no trailing slash
 API_URL="${API_URL%/}"
