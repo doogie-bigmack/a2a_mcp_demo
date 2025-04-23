@@ -12,9 +12,9 @@ from shared.models import (
     DockerConfig, DockerFixResult, TaskStore, TaskHistory, SendTaskRequest,
     SendTaskResponse, Task, PushNotificationEndpoint, Artifact, Part
 )
-from send_subscribe_sse import router as sse_router
-from jsonrpc_dispatch import jsonrpc_async_dispatch
-from brave_mcp_client import web_search
+from server.send_subscribe_sse import router as sse_router
+from server.jsonrpc_dispatch import jsonrpc_async_dispatch
+from server.brave_mcp_client import web_search
 
 # --- JSON-RPC: Push Notification Set ---
 async def tasks_pushNotification_set(id: str, endpoint: str, token: str = None):
@@ -137,11 +137,11 @@ logfire.info("asgi_middleware_registered")
 # Instrument FastAPI app with logfire for observability and JSON logging
 logfire.instrument_fastapi(app)
 
-from send_subscribe_sse import router as sse_router
+from server.send_subscribe_sse import router as sse_router
 # Include the SSE router for server-sent events
 app.include_router(sse_router)
 # Import the shared task store for managing tasks
-from task_store import task_store
+from server.task_store import task_store
 
 
 # --- JSON-RPC streaming method for tasks/sendSubscribe ---
@@ -303,7 +303,7 @@ def tasks_cancel(id: str):
         return {"error": {"code": -32001, "message": str(e)}}
 # --- End tasks_cancel ---
 
-from jsonrpc_dispatch import jsonrpc_async_dispatch
+from server.jsonrpc_dispatch import jsonrpc_async_dispatch
 
 @app.post("/")
 async def jsonrpc_entrypoint(request: Request, _auth: None = Depends(verify_bearer_auth)):
