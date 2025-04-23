@@ -45,7 +45,9 @@ jobs:
           EOF
 
       - name: Start server container
-        run: docker compose up -d server
+        run: |
+          export PYTHONPATH=$(pwd)
+          docker compose up -d server
 
       - name: Wait for server to be healthy
         run: |
@@ -59,6 +61,7 @@ jobs:
 
       - name: Run shell integration tests
         run: |
+          export PYTHONPATH=$(pwd)
           set -e
           for f in test_jsonrpc_tasks.sh test_jsonrpc_push_notification.sh test_negative_robustness.sh test_streaming_and_resubscribe.sh; do
             if [ -f "$f" ]; then bash "$f" || exit 1; fi
