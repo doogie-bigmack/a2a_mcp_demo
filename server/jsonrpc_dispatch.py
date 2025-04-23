@@ -11,9 +11,9 @@ def get_jsonrpc_method_map():
         dict: Mapping of method names to callables.
     """
     # Import locally to avoid circular import
-    from agent import (
+    from server.agent import (
         tasks_send, tasks_get, tasks_cancel, tasks_pushNotification_set,
-        tasks_pushNotification_get
+        tasks_pushNotification_get, tasks_resubscribe
     )
     return {
         "tasks_send": tasks_send,
@@ -21,6 +21,7 @@ def get_jsonrpc_method_map():
         "tasks_cancel": tasks_cancel,
         "tasks_pushNotification_set": tasks_pushNotification_set,
         "tasks_pushNotification_get": tasks_pushNotification_get,
+        "tasks_resubscribe": tasks_resubscribe,
     }
 
 

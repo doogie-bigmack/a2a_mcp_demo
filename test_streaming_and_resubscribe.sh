@@ -24,27 +24,40 @@ fi
 
 set -euo pipefail
 
-API_URL="http://localhost:8080/"
+API_URL="http://localhost:8080"
+# Ensure no trailing slash
+API_URL="${API_URL%/}"
 TOKEN="${A2A_BEARER_TOKEN:-test-token}"
 
 fail() { echo "[FAIL] $1"; exit 1; }
 pass() { echo "[PASS] $1"; }
 
 # 1. Create a new task
-SEND_RESP=$(curl -s -X POST "$API_URL" \
-  -H "Authorization: Bearer $TOKEN" \
+SEND_RESP=$(curl -v -s -X POST "$API_URL" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tasks_send","params":{"raw_text":"FROM python:3.12-slim\nCMD [\"python\", \"app.py\"]"}}')
 echo "$SEND_RESP"
-TASK_ID=$(echo "$SEND_RESP" | jq -r '.result.task.id')
+TASK_ID=$(echo "$SEND_RESP" | jq -r '.result.result.task.id // empty')
+echo "Parsed TASK_ID: $TASK_ID"
 
 [[ -z "$TASK_ID" || "$TASK_ID" == "null" ]] && fail "Could not create task"
 pass "Task created: $TASK_ID"
 
 # 2. Test streaming endpoint (SSE)
-echo "Testing SSE /stream/$TASK_ID ..."
+echo "Testing SSE /stream/$TASK_ID ...
+sleep 2"
+echo "Testing SSE /stream/$TASK_ID ...
+sleep 2"
+sleep 3
 STREAM_RESP=$(curl -s -N "$API_URL/stream/$TASK_ID")
-echo "$STREAM_RESP" | grep -q 'submitted' && pass "SSE stream contains 'submitted'" || fail "SSE stream missing 'submitted'"
+echo "Raw SSE stream output:"
+echo "$STREAM_RESP"
+if echo "$STREAM_RESP" | grep -q 'submitted'; then
+  pass "SSE stream contains 'submitted'"
+else
+  fail "SSE stream missing 'submitted'"
+fi
 
 # 3. Test resubscribe JSON-RPC
 RESUBSCRIBE_RESP=$(curl -s -X POST "$API_URL" \
