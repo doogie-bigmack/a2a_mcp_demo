@@ -17,8 +17,7 @@ echo "\n===== Environment Variables (including secrets) ====="
 env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
 echo "===== End Environment Variables =====\n"
 # Set TOKEN if not already set
-if [ -z "$TOKEN" ] && [ ! -z "$A2A_BEARER_TOKEN" ]; then
-  # Robust TOKEN assignment
+# Robust TOKEN assignment
 if [ -z "${TOKEN:-}" ]; then
   if [ -n "${A2A_BEARER_TOKEN:-}" ]; then
     TOKEN="$A2A_BEARER_TOKEN"
