@@ -1,18 +1,27 @@
 #!/bin/bash
 
 set -e
-# Print .env file contents if accessible
+# Print .env file contents and export all variables
 if [ -f .env ]; then
-  echo "\n===== .env file contents ====="
+  echo "\n===== .env file contents (including secrets) ====="
   cat .env
   echo "===== End .env file contents =====\n"
+  set -o allexport
+  source .env
+  set +o allexport
 else
   echo ".env file not found or not readable."
 fi
-# Print all environment variables relevant to the test
-echo "\n===== Environment Variables ====="
+# Print all environment variables relevant to the test (including secrets)
+echo "\n===== Environment Variables (including secrets) ====="
 env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
 echo "===== End Environment Variables =====\n"
+# Set TOKEN if not already set
+if [ -z "$TOKEN" ] && [ ! -z "$A2A_BEARER_TOKEN" ]; then
+  TOKEN="$A2A_BEARER_TOKEN"
+  echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+fi
+
 set -euo pipefail
 
 echo "--- Creating a new task (tasks_send) ---"
