@@ -25,16 +25,22 @@ fi
 echo "\n===== Environment Variables (including secrets) ====="
 env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
 echo "===== End Environment Variables =====\n"
-# Set TOKEN if not already set
-if [ -z "$TOKEN" ] && [ ! -z "$A2A_BEARER_TOKEN" ]; then
-  TOKEN="$A2A_BEARER_TOKEN"
-  echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+# Robust TOKEN assignment
+if [ -z "${TOKEN:-}" ]; then
+  if [ -n "${A2A_BEARER_TOKEN:-}" ]; then
+    TOKEN="${A2A_BEARER_TOKEN}"
+    echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+  else
+    TOKEN="test-token"
+    echo "TOKEN not set; using fallback: $TOKEN"
+  fi
 fi
 API_URL="http://localhost:8080/"
 
 # 1. Create a new task (tasks_send)
 echo "\n--- Creating a new task (tasks_send) ---"
 echo "Request: POST $API_URL"
+echo "Headers: Authorization: Bearer ${TOKEN:-}, Content-Type: application/json"
 echo "Headers: Authorization: Bearer $TOKEN, Content-Type: application/json"
 echo "Payload: {\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"tasks_send\", \"params\": {\"raw_text\": \"FROM python:3.12-slim\\nCMD [\\\"python\\\", \\\"app.py\\\"]\"}}"
 SEND_RESP=$(curl -v -s -X POST "$API_URL" \

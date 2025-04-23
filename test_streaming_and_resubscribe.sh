@@ -16,16 +16,6 @@ fi
 echo "\n===== Environment Variables (including secrets) ====="
 env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
 echo "===== End Environment Variables =====\n"
-# Set TOKEN if not already set
-if [ -z "$TOKEN" ] && [ ! -z "$A2A_BEARER_TOKEN" ]; then
-  TOKEN="$A2A_BEARER_TOKEN"
-  echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
-fi
-
-set -euo pipefail
-
-echo "PYTHONPATH: $PYTHONPATH"
-pwd
 ls -l
 docker compose ps
 docker compose logs server
@@ -33,7 +23,16 @@ docker compose logs server
 API_URL="http://localhost:8080"
 # Ensure no trailing slash
 API_URL="${API_URL%/}"
-TOKEN="${A2A_BEARER_TOKEN:-test-token}"
+# Robust TOKEN assignment
+if [ -z "${TOKEN:-}" ]; then
+  if [ -n "${A2A_BEARER_TOKEN:-}" ]; then
+    TOKEN="$A2A_BEARER_TOKEN"
+    echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+  else
+    TOKEN="test-token"
+    echo "TOKEN not set; using fallback: $TOKEN"
+  fi
+fi
 
 fail() { echo "[FAIL] $1"; exit 1; }
 pass() { echo "[PASS] $1"; }

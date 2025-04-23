@@ -18,8 +18,15 @@ env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
 echo "===== End Environment Variables =====\n"
 # Set TOKEN if not already set
 if [ -z "$TOKEN" ] && [ ! -z "$A2A_BEARER_TOKEN" ]; then
-  TOKEN="$A2A_BEARER_TOKEN"
-  echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+  # Robust TOKEN assignment
+if [ -z "${TOKEN:-}" ]; then
+  if [ -n "${A2A_BEARER_TOKEN:-}" ]; then
+    TOKEN="$A2A_BEARER_TOKEN"
+    echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+  else
+    TOKEN="test-token"
+    echo "TOKEN not set; using fallback: $TOKEN"
+  fi
 fi
 
 set -euo pipefail
