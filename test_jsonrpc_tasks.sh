@@ -8,7 +8,10 @@ TOKEN="ay5cJzvq0ERBJ3K3b_rGTaeZuykbWqGcvU23KMzDRRk"  # Synced with .env A2A_BEAR
 
 # 1. Create a new task (tasks_send)
 echo "\n--- Creating a new task (tasks_send) ---"
-SEND_RESP=$(curl -s -X POST "$API_URL" \
+echo "Request: POST $API_URL"
+echo "Headers: Authorization: Bearer $TOKEN, Content-Type: application/json"
+echo "Payload: {\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"tasks_send\", \"params\": {\"raw_text\": \"FROM python:3.12-slim\\nCMD [\\\"python\\\", \\\"app.py\\\"]\"}}"
+SEND_RESP=$(curl -v -s -X POST "$API_URL" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -23,6 +26,7 @@ if command -v jq >/dev/null 2>&1; then
 else
   TASK_ID=$(echo "$SEND_RESP" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('result', {}).get('result', {}).get('task', {}).get('id', ''))")
 fi
+echo "Extracted TASK_ID: $TASK_ID"
 if [ -z "$TASK_ID" ]; then
   echo "ERROR: Could not extract task ID from SEND_RESP. Full response: $SEND_RESP" >&2
   exit 1
@@ -30,7 +34,10 @@ fi
 
 # 2. Get task status (tasks_get)
 echo "\n--- Getting task status (tasks_get) ---"
-GET_RESP=$(curl -s -X POST "$API_URL" \
+echo "Request: POST $API_URL"
+echo "Headers: Authorization: Bearer $TOKEN, Content-Type: application/json"
+echo "Payload: {\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"tasks_get\", \"params\": {\"id\": \"$TASK_ID\", \"historyLength\": 0}}"
+GET_RESP=$(curl -v -s -X POST "$API_URL" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -39,11 +46,14 @@ GET_RESP=$(curl -s -X POST "$API_URL" \
     "method": "tasks_get",
     "params": {"id": "'$TASK_ID'", "historyLength": 0}
   }')
-echo "$GET_RESP"
+echo "Raw GET_RESP: $GET_RESP"
 
 # 3. Cancel the task (tasks_cancel)
 echo "\n--- Cancelling the task (tasks_cancel) ---"
-CANCEL_RESP=$(curl -s -X POST "$API_URL" \
+echo "Request: POST $API_URL"
+echo "Headers: Authorization: Bearer $TOKEN, Content-Type: application/json"
+echo "Payload: {\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"tasks_cancel\", \"params\": {\"id\": \"$TASK_ID\"}}"
+CANCEL_RESP=$(curl -v -s -X POST "$API_URL" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -52,13 +62,24 @@ CANCEL_RESP=$(curl -s -X POST "$API_URL" \
     "method": "tasks_cancel",
     "params": {"id": "'$TASK_ID'"}
   }')
-echo "$CANCEL_RESP"
+echo "Raw CANCEL_RESP: $CANCEL_RESP"
 
 # 4. Try to cancel again (should get -32002 error)
 echo "\n--- Cancelling again (should fail with -32002) ---"
-CANCEL_AGAIN_RESP=$(curl -s -X POST "$API_URL" \
+echo "Request: POST $API_URL"
+echo "Headers: Authorization: Bearer $TOKEN, Content-Type: application/json"
+echo "Payload: {\"jsonrpc\": \"2.0\", \"id\": 4, \"method\": \"tasks_cancel\", \"params\": {\"id\": \"$TASK_ID\"}}"
+CANCEL_AGAIN_RESP=$(curl -v -s -X POST "$API_URL" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "tasks_cancel",
+    "params": {"id": "'$TASK_ID'"}
+  }')
+echo "Raw CANCEL_AGAIN_RESP: $CANCEL_AGAIN_RESP"
+
   -d '{
     "jsonrpc": "2.0",
     "id": 4,
