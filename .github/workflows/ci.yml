@@ -32,6 +32,18 @@ jobs:
       - name: Build Docker images
         run: docker compose build
 
+      - name: Create .env file from GitHub Secrets
+        run: |
+          cat <<EOF > .env
+          BRAVE_API_KEY=${{ secrets.BRAVE_API_KEY }}
+          BRAVE_MCP_SERVER_URL=${{ secrets.BRAVE_MCP_SERVER_URL }}
+          LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          A2A_BEARER_TOKEN=${{ secrets.A2A_BEARER_TOKEN }}
+          A2A_SERVER_URL=${{ secrets.A2A_SERVER_URL }}
+          PYTHON_ENV=${{ secrets.PYTHON_ENV }}
+          EOF
+
       - name: Start server container
         run: docker compose up -d server
 
