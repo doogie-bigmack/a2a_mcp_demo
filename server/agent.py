@@ -15,6 +15,7 @@ from shared.models import (
 from server.send_subscribe_sse import router as sse_router
 from server.jsonrpc_dispatch import jsonrpc_async_dispatch
 from server.brave_mcp_client import web_search
+from server.upload_stub import router as upload_stub_router
 
 # --- JSON-RPC: Push Notification Set ---
 async def tasks_pushNotification_set(id: str, endpoint: str, token: str = None):
@@ -141,6 +142,7 @@ from server.send_subscribe_sse import router as sse_router
 from server.upload_stub import router as upload_stub_router
 # Include the SSE router for server-sent events
 app.include_router(sse_router)
+app.include_router(upload_stub_router)
 app.include_router(upload_stub_router)
 # Import the shared task store for managing tasks
 from server.task_store import task_store
