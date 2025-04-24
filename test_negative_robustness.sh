@@ -30,7 +30,7 @@ fi
 
 set -euo pipefail
 
-echo "PYTHONPATH: $PYTHONPATH"
+
 pwd
 ls -l
 docker compose ps
