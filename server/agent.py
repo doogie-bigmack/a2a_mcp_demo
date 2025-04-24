@@ -188,7 +188,7 @@ def tasks_resubscribe(id: str, historyLength: int = 0):
 def chunked_upload_stub(*args, **kwargs):
     trace_id = str(uuid.uuid4())
     logfire.info("chunked_upload_stub_called", trace_id=trace_id)
-    return {"result": "Chunked upload not implemented in PoC"}
+    return {"result": "not implemented"}
 
 # --- Bearer Token Auth Helpers ---
 def get_bearer_token():

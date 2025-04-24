@@ -13,7 +13,7 @@ def get_jsonrpc_method_map():
     # Import locally to avoid circular import
     from server.agent import (
         tasks_send, tasks_get, tasks_cancel, tasks_pushNotification_set,
-        tasks_pushNotification_get, tasks_resubscribe
+        tasks_pushNotification_get, tasks_resubscribe, chunked_upload_stub
     )
     return {
         "tasks_send": tasks_send,
@@ -22,6 +22,7 @@ def get_jsonrpc_method_map():
         "tasks_pushNotification_set": tasks_pushNotification_set,
         "tasks_pushNotification_get": tasks_pushNotification_get,
         "tasks_resubscribe": tasks_resubscribe,
+        "chunked_upload_stub": chunked_upload_stub,
     }
 
 
