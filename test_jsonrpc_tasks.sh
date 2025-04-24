@@ -22,7 +22,7 @@ echo "\n===== Environment Variables (including secrets) ====="
 env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
 echo "===== End Environment Variables =====\n"
 
-echo "PYTHONPATH: ${PYTHONPATH:-}"
+
 pwd
 ls -l
 docker compose ps
