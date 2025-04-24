@@ -12,9 +12,10 @@ from shared.models import (
     DockerConfig, DockerFixResult, TaskStore, TaskHistory, SendTaskRequest,
     SendTaskResponse, Task, PushNotificationEndpoint, Artifact, Part
 )
-from send_subscribe_sse import router as sse_router
-from jsonrpc_dispatch import jsonrpc_async_dispatch
-from brave_mcp_client import web_search
+from server.send_subscribe_sse import router as sse_router
+from server.jsonrpc_dispatch import jsonrpc_async_dispatch
+from server.brave_mcp_client import web_search
+from server.upload_stub import router as upload_stub_router
 
 # --- JSON-RPC: Push Notification Set ---
 async def tasks_pushNotification_set(id: str, endpoint: str, token: str = None):
@@ -85,6 +86,11 @@ class LogAllHeadersMiddleware:
             await error_sender({"type": "http.response.body"})
 
 app = FastAPI()
+
+@app.get("/healthz")
+async def health_check():
+    return {"status": "ok"}
+
 # Middleware to enforce Accept header for agent card endpoint
 @app.middleware("http")
 async def enforce_agent_card_accept_header(request: Request, call_next):
@@ -132,34 +138,37 @@ logfire.info("asgi_middleware_registered")
 # Instrument FastAPI app with logfire for observability and JSON logging
 logfire.instrument_fastapi(app)
 
-from send_subscribe_sse import router as sse_router
+from server.send_subscribe_sse import router as sse_router
+from server.upload_stub import router as upload_stub_router
 # Include the SSE router for server-sent events
 app.include_router(sse_router)
+app.include_router(upload_stub_router)
+app.include_router(upload_stub_router)
 # Import the shared task store for managing tasks
-from task_store import task_store
+from server.task_store import task_store
 
 
 # --- JSON-RPC streaming method for tasks/sendSubscribe ---
 from fastapi.responses import StreamingResponse
 import asyncio
 
-async def event_generator(task_id: str):
+def event_generator(task_id: str):
     """
-    Simulate server-sent event (SSE) streaming for a given task.
+    Simulate a server-sent event (SSE) stream of status updates for a given task.
 
     Args:
-        task_id (str): The ID of the task to stream events for.
+        task_id (str): The ID of the task to stream updates for.
 
     Yields:
-        str: Event data as a string for SSE.
+        str: SSE-formatted strings containing task state updates.
     """
-    # Simulate streaming status updates for demo
     states = ["submitted", "working", "completed"]
     for state in states:
-        await asyncio.sleep(1)
+        # Use time.sleep because this function is synchronous
+        import time
+        time.sleep(1)
         event = {"task_id": task_id, "state": state}
         yield f"data: {json.dumps(event)}\n\n"
-    # End of stream
     yield "event: close\ndata: null\n\n"
 
 # --- JSON-RPC: tasks_resubscribe ---
@@ -179,7 +188,7 @@ def tasks_resubscribe(id: str, historyLength: int = 0):
 def chunked_upload_stub(*args, **kwargs):
     trace_id = str(uuid.uuid4())
     logfire.info("chunked_upload_stub_called", trace_id=trace_id)
-    return {"result": "Chunked upload not implemented in PoC"}
+    return {"result": "not implemented"}
 
 # --- Bearer Token Auth Helpers ---
 def get_bearer_token():
@@ -298,7 +307,7 @@ def tasks_cancel(id: str):
         return {"error": {"code": -32001, "message": str(e)}}
 # --- End tasks_cancel ---
 
-from jsonrpc_dispatch import jsonrpc_async_dispatch
+from server.jsonrpc_dispatch import jsonrpc_async_dispatch
 
 @app.post("/")
 async def jsonrpc_entrypoint(request: Request, _auth: None = Depends(verify_bearer_auth)):

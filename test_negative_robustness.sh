@@ -1,5 +1,40 @@
 #!/bin/bash
+
+set -e
+# Print .env file contents and export all variables
+if [ -f .env ]; then
+  echo "\n===== .env file contents (including secrets) ====="
+  cat .env
+  echo "===== End .env file contents =====\n"
+  set -o allexport
+  source .env
+  set +o allexport
+else
+  echo ".env file not found or not readable."
+fi
+# Print all environment variables relevant to the test (including secrets)
+echo "\n===== Environment Variables (including secrets) ====="
+env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
+echo "===== End Environment Variables =====\n"
+# Set TOKEN if not already set
+# Robust TOKEN assignment
+if [ -z "${TOKEN:-}" ]; then
+  if [ -n "${A2A_BEARER_TOKEN:-}" ]; then
+    TOKEN="$A2A_BEARER_TOKEN"
+    echo "TOKEN set from A2A_BEARER_TOKEN: $TOKEN"
+  else
+    TOKEN="test-token"
+    echo "TOKEN not set; using fallback: $TOKEN"
+  fi
+fi
+
 set -euo pipefail
+
+
+pwd
+ls -l
+docker compose ps
+docker compose logs server
 
 BASE_URL="http://localhost:8080"
 AUTH_HEADER="Authorization: Bearer ${A2A_BEARER_TOKEN:-test-token}"
@@ -48,17 +83,23 @@ resp=$(curl -s -X POST "$BASE_URL/" -H "Content-Type: application/json" -H "$AUT
 echo "$resp" | grep -q 'error' && pass "Invalid JSON returns error" || fail "Malformed JSON did not return error"
 
 echo "Test: JSON-RPC missing method returns error"
-resp=$(curl -s -X POST "$BASE_URL/" -H "Content-Type: application/json" -H "$AUTH_HEADER" -d '{"jsonrpc":"2.0","id":1,"params":{}}')
+resp=$(curl -v -s -X POST -H "Content-Type: application/json" -H "$AUTH_HEADER" -d '{"jsonrpc":"2.0","id":1,"params":{}}' "$BASE_URL/")
 echo "$resp" | grep -q 'error' && pass "Missing method returns error" || fail "Missing method did not return error"
 
 # 8. JSON-RPC: request non-existent task ID returns −32001
 echo "Test: JSON-RPC get non-existent task returns -32001"
-resp=$(curl -s -X POST "$BASE_URL/" -H "Content-Type: application/json" -H "$AUTH_HEADER" -d '{"jsonrpc":"2.0","id":2,"method":"tasks_get","params":{"id":"does-not-exist"}}')
-echo "$resp" | grep -q '32001' && pass "Non-existent task returns -32001" || fail "Did not return -32001 for unknown task"
+resp=$(curl -v -s -X POST -H "Content-Type: application/json" -H "$AUTH_HEADER" -d '{"jsonrpc":"2.0","id":2,"method":"tasks_get","params":{"id":"does-not-exist"}}' "$BASE_URL/")
+echo "Response for non-existent task: $resp"
+err_code=$(echo "$resp" | jq -r '.error.code // empty')
+if [[ "$err_code" == "-32001" ]]; then
+  pass "Non-existent task returns -32001"
+else
+  fail "Did not return -32001 for unknown task (got: $err_code)"
+fi
 
 # 9. SSE: connect with invalid/expired task ID returns error/close
 echo "Test: SSE with invalid task ID closes connection"
-code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/stream/does-not-exist")
+code=$(curl -s -o /dev/null -w "%{http_code}" -H "$AUTH_HEADER" "$BASE_URL/stream/does-not-exist")
 [[ "$code" == 404 || "$code" == 400 ]] && pass "SSE invalid task closes/404" || fail "Expected 404/400, got $code"
 
 echo "All negative/robustness tests passed."

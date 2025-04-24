@@ -38,7 +38,9 @@ def stream_task_status(task_id: str, request: Request):
         StreamingResponse: SSE stream of task status updates, or JSON error if the
         task is unknown.
     """
-    from task_store import task_store
+    from server.task_store import task_store
+    import logfire
+    logfire.info("sse_all_task_ids", all_task_ids=list(task_store.tasks.keys()), requested_task_id=task_id)
     if task_id not in task_store.tasks:
         logfire.error("stream_invalid_task_id", task_id=task_id)
         return JSONResponse(content={"error": "Task id unknown"}, status_code=404)

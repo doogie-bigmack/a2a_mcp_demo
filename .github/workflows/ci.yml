@@ -30,15 +30,29 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker images
-        run: docker compose build
+        run: docker compose build --no-cache
+
+      - name: Create .env file from GitHub Secrets
+        run: |
+          cat <<EOF > .env
+          BRAVE_API_KEY=${{ secrets.BRAVE_API_KEY }}
+          BRAVE_MCP_SERVER_URL=${{ secrets.BRAVE_MCP_SERVER_URL }}
+          LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          A2A_BEARER_TOKEN=${{ secrets.A2A_BEARER_TOKEN }}
+          A2A_SERVER_URL=${{ secrets.A2A_SERVER_URL }}
+          PYTHON_ENV=${{ secrets.PYTHON_ENV }}
+          EOF
 
       - name: Start server container
-        run: docker compose up -d server
+        run: |
+          export PYTHONPATH=$(pwd)
+          docker compose up -d server
 
       - name: Wait for server to be healthy
         run: |
           for i in {1..10}; do
-            if curl -fs http://localhost:8080/; then exit 0; fi
+            if curl -fs http://localhost:8080/healthz; then exit 0; fi
             sleep 2
           done
           echo "Server did not start in time" >&2
@@ -47,6 +61,27 @@ jobs:
 
       - name: Run shell integration tests
         run: |
+          export PYTHONPATH=$(pwd)
+          echo "PYTHONPATH=$PYTHONPATH"
+          pwd
+          ls -l
+          docker compose ps
+          docker compose logs server
+          set -e
+          for f in test_jsonrpc_tasks.sh test_jsonrpc_push_notification.sh test_negative_robustness.sh test_streaming_and_resubscribe.sh; do
+            if [ -f "$f" ]; then bash "$f" || exit 1; fi
+          done
+
+      - name: Print server logs and diagnostics if tests fail
+        if: always()
+        run: |
+          echo "==== SERVER LOGS ===="
+          docker compose logs server || true
+          echo "==== DOCKER PS ===="
+          docker compose ps || true
+          echo "==== WORKSPACE TREE ===="
+          ls -lR || true
+          export PYTHONPATH=$(pwd)
           set -e
           for f in test_jsonrpc_tasks.sh test_jsonrpc_push_notification.sh test_negative_robustness.sh test_streaming_and_resubscribe.sh; do
             if [ -f "$f" ]; then bash "$f" || exit 1; fi
