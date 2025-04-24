@@ -2,25 +2,32 @@
 # Test A2A JSON-RPC endpoints for tasks_send, tasks_get, and tasks_cancel using curl
 # Usage: bash test_jsonrpc_tasks.sh
 
-set -e
-# Print .env file contents and export all variables
+#!/bin/bash
+set -euo pipefail
+
+# Source .env and export variables if it exists
 if [ -f .env ]; then
   echo "\n===== .env file contents (including secrets) ====="
   cat .env
   echo "===== End .env file contents =====\n"
-  set -euo pipefail
+  set -o allexport
+  source .env
+  set +o allexport
+else
+  echo ".env file not found or not readable."
+fi
+
+# Print all environment variables relevant to the test (including secrets)
+echo "\n===== Environment Variables (including secrets) ====="
+env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
+echo "===== End Environment Variables =====\n"
 
 echo "PYTHONPATH: $PYTHONPATH"
 pwd
 ls -l
 docker compose ps
 docker compose logs server
-set -o allexport
-  source .env
-  set +o allexport
-else
-  echo ".env file not found or not readable."
-fi
+
 # Print all environment variables relevant to the test (including secrets)
 echo "\n===== Environment Variables (including secrets) ====="
 env | grep -E 'A2A|BRAVE|LOGFIRE|OPENAI|PYTHON_ENV|SERVER_URL|TOKEN|KEY|URL'
