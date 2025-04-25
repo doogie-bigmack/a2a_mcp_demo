@@ -1,12 +1,10 @@
-<svg width="700" height="180" viewBox="0 0 700 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="700" height="180" rx="18" fill="#fff"/>
+<svg width="650" height="110" viewBox="0 0 650 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="650" height="110" rx="16" fill="#fff"/>
   <!-- Logo/Icon (stylized A2A) -->
   <g>
-    <circle cx="90" cy="90" r="55" fill="#5B21B6" opacity="0.13"/>
-    <text x="55" y="115" font-size="64" font-family="Arial" fill="#5B21B6" font-weight="bold">A2A</text>
+    <circle cx="65" cy="55" r="38" fill="#5B21B6" opacity="0.13"/>
+    <text x="35" y="70" font-size="48" font-family="Arial" fill="#5B21B6" font-weight="bold">A2A</text>
   </g>
   <!-- Project Name -->
-  <text x="170" y="85" font-size="48" font-family="Arial" fill="#222" font-weight="bold">A2A Docker Security Demo</text>
-  <!-- Subtitle -->
-  <text x="170" y="120" font-size="22" font-family="Arial" fill="#666">Agent Framework / Secure Dockerfile Review with MCP</text>
+  <text x="125" y="70" font-size="38" font-family="Arial" fill="#222" font-weight="bold">A2A + MCP Demo</text>
 </svg>
