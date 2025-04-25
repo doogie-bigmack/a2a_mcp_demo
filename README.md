@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="A2A Docker Security Demo Banner" width="600"/>
+</p>
+
 # A2A + MCP Docker Security Demo
 
 ## Overview
@@ -164,29 +168,158 @@ a2a-docker-demo/
 ```
 
 ## Quick Start
-1. **Clone the repo**
-2. **Place your Dockerfile for testing in the project root**
-3. **Run the Brave MCP server (in a separate terminal):**
-   - Make sure you have a `.env` file in the project root with your Brave API key:
-     ```env
-     BRAVE_API_KEY=YOUR_API_KEY_HERE
-     BRAVE_MCP_SERVER_URL=http://host.docker.internal:3000
-     ```
-   - Start the MCP server:
-     ```sh
-     npx -y @modelcontextprotocol/server-brave-search
-     ```
-   - Leave this terminal running.
-4. **Build and run the demo:**
-   - In a new terminal, start all services:
-     ```sh
-     docker compose up --build
-     ```
-5. **Submit a Dockerfile for hardening:**
-   ```sh
-   docker compose run client --dockerfile /app/shared/sample.Dockerfile
-   ```
-   (Replace with your file path as needed)
+
+### 1. Clone and Set Up
+```sh
+git clone <repo-url>
+cd <repo-directory>
+cp .env.example .env
+```
+Edit `.env` and fill in required values:
+- `BRAVE_API_KEY` (get from Brave Search)
+- `LOGFIRE_TOKEN` (optional for local, required for Logfire)
+- `A2A_BEARER_TOKEN` (any strong string for dev/demo)
+- `BRAVE_MCP_SERVER_URL` (usually `http://host.docker.internal:3000`)
+
+### 2. Prepare Your Dockerfile
+- Place your Dockerfile at `shared/sample.Dockerfile` (or adjust the path as needed).
+
+### 3. Start the Brave MCP Server
+```sh
+npx -y @modelcontextprotocol/server-brave-search
+```
+Leave this terminal running.
+
+### 4. Build and Start All Services
+```sh
+docker compose up --build
+```
+
+### 5. Run the Client to Submit a Dockerfile
+```sh
+docker compose run client --dockerfile /app/shared/sample.Dockerfile
+```
+Replace the path if your Dockerfile is elsewhere.
+
+---
+
+## Running the Client Standalone (Python)
+
+You can run the Python client directly (outside Docker):
+```sh
+cd client
+pip install -r ../requirements.txt
+python main.py --dockerfile ../shared/sample.Dockerfile --server-url http://localhost:8080
+```
+Adjust the `--dockerfile` and `--server-url` as needed.
+
+---
+
+## Running All Tests
+
+From the project root, run:
+```sh
+bash run_all_tests.sh
+```
+This will execute all Python and shell-based tests. Ensure your `.env` is set up and required services are running (see above).
+
+---
+
+## Environment Variables for local test enveironment copy these into your .env file
+- `BRAVE_API_KEY` (required for Brave MCP server; set in `.env`)
+- `LOGFIRE_TOKEN` (optional, for structured logging)
+- `A2A_BEARER_TOKEN` (required for agent auth; just generate any random string, e.g., 32+ characters)
+- `BRAVE_MCP_SERVER_URL` (URL for MCP server)
+- `A2A_SERVER_URL` (optional, override for local testing)
+- `PYTHON_ENV` (optional, e.g., development)
+- `PYTHONUNBUFFERED=1` (default for logs)
+- `MCP_SERVER_PORT=3000` (Brave MCP server)
+
+---
+
+## Example .env File
+Copy `.env.example` to `.env` and fill in your real values. Example:
+
+```ini
+# .env.example for A2A + MCP Docker Security Demo
+# Copy this file to .env and fill in your real values
+
+# Logfire (structured logging/observability)
+LOGFIRE_TOKEN=your_logfire_write_token_here
+
+# A2A Bearer token (for client/server auth)
+A2A_BEARER_TOKEN=your_a2a_bearer_token_here  # Any random string, e.g. 32+ characters
+
+# Brave MCP (web search for best practices)
+BRAVE_API_KEY=your_brave_api_key_here
+BRAVE_MCP_SERVER_URL=http://host.docker.internal:3000
+
+# (Optional) Server URL override (for local testing)
+A2A_SERVER_URL=http://host.docker.internal:8080
+
+# (Optional) Client/Server environment
+PYTHON_ENV=development
+```
+
+Reference this section when setting up your environment.
+
+---
+
+## Troubleshooting
+- **Dockerfile not found:** Ensure the path exists inside the client container.
+- **API key errors:** Check your `.env` and MCP server status.
+- **Port conflicts:** Make sure ports 3000 (MCP) and 8080 (server) are available.
+- **Logs:** Use `docker compose logs` or Logfire for structured logs.
+- **If the MCP server is not reachable:** Ensure you started it with `npx -y @modelcontextprotocol/server-brave-search` and `.env` is correct.
+- **If you change `.env`:** Restart both the MCP server and all Docker containers.
+
+---
+
+## Project Structure
+```
+a2a-docker-demo/
+├── client/
+│   ├── agent.py
+│   ├── main.py
+│   └── Dockerfile
+├── server/
+│   ├── agent.py
+│   ├── main.py
+│   └── Dockerfile
+├── shared/
+│   └── models.py
+├── docker-compose.yml
+├── requirements.txt
+├── README.md
+```
+
+---
+
+## How to Extend
+- **Add new MCP tools:** Edit `mcp.json` and add new tool configs.
+- **Change static checks:** Update `server/agent.py` logic.
+- **Plug in other best-practice sources:** Modify the MCP integration or add new web search endpoints.
+
+---
+
+## CI/CD
+- Add your preferred pipeline to automate tests (see `.github/workflows/` if present)
+
+---
+
+## Security & Logging
+- All logs use structured JSON format (see Logfire integration)
+- Containers run as non-root, drop unneeded Linux capabilities
+
+---
+
+For more details, see the PRD and specs in this repo.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## TODO
 - [ ] When updating Markdown checklists for A2A compliance, always use green check marks (✅) to indicate completed items, not just [x]. This applies to task lists in a2a-task.md and similar files.
@@ -231,3 +364,9 @@ CMD ["python", "main.py"]
 ---
 
 For more details, see the PRD and specs in this repo.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
