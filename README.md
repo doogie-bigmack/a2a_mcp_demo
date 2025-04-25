@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="A2A Docker Security Demo Banner" width="600"/>
+</p>
+
 # A2A + MCP Docker Security Demo
 
 ## Overview
@@ -221,7 +225,7 @@ This will execute all Python and shell-based tests. Ensure your `.env` is set up
 
 ---
 
-## Environment Variables
+## Environment Variables for local test enveironment copy these into your .env file
 - `BRAVE_API_KEY` (required for Brave MCP server; set in `.env`)
 - `LOGFIRE_TOKEN` (optional, for structured logging)
 - `A2A_BEARER_TOKEN` (required for agent auth; just generate any random string, e.g., 32+ characters)
@@ -311,6 +315,12 @@ a2a-docker-demo/
 
 For more details, see the PRD and specs in this repo.
 
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 ## TODO
 - [ ] When updating Markdown checklists for A2A compliance, always use green check marks (✅) to indicate completed items, not just [x]. This applies to task lists in a2a-task.md and similar files.
 
@@ -354,3 +364,9 @@ CMD ["python", "main.py"]
 ---
 
 For more details, see the PRD and specs in this repo.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
