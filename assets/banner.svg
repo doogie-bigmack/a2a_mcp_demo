@@ -3,9 +3,8 @@
   <!-- Logo/Icon (stylized A2A) -->
   <g>
     <circle cx="65" cy="55" r="38" fill="#5B21B6" opacity="0.13"/>
-    <text x="35" y="70" font-size="48" font-family="Arial" fill="#5B21B6" font-weight="bold">A2A</text>
+    <text x="65" y="65" font-size="48" font-family="Arial, sans-serif" fill="#5B21B6" font-weight="bold" text-anchor="middle">A2A</text>
   </g>
   <!-- Project Name -->
-  <text x="125" y="70" font-size="38" font-family="Arial" fill="#222" font-weight="bold">A2A + MCP Demo</text>
-</svg>
+  <text x="125" y="65" font-size="38" font-family="Arial, sans-serif" fill="#222" font-weight="bold">A2A + MCP Docker Security Demo</text>
 </svg>
