@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="A2A Docker Security Demo Banner" width="600"/>
+  <img src="https://raw.githubusercontent.com/doogie-bigmack/a2a_mcp_demo/refs/heads/main/assets/banner.svg" alt="A2A Docker Security Demo Banner" width="600"/>
 </p>
 
 # A2A + MCP Docker Security Demo
